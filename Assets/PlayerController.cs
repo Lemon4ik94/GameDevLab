@@ -6,9 +6,13 @@ public class PlayerController : MonoBehaviour
 {
     public int speed;
     public int jumpSpeed;
+    private bool facingRight = true;
     private Vector3 verticalVelocity = Vector3.zero;
     private float horizontalMove;
     private bool isJumping = false;
+    private bool isGrounded = true;
+    public LayerMask GroundLayer;
+    private CircleCollider2D cc;
     private Rigidbody2D rb;
 
 
@@ -16,6 +20,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        cc = GetComponent<CircleCollider2D>();
     }
 
     // Update is called once per frame
@@ -26,22 +31,47 @@ public class PlayerController : MonoBehaviour
         rb.velocity = new Vector2(horizontalMove * speed, rb.velocity.y);
 
         if (isJumping) {
-            // rb.velocity = Vector3.SmoothDamp(rb.velocity, new Vector2(rb.velocity.x, jumpSpeed), ref verticalVelocity, 2f);
-            // isJumping = false;
             rb.AddForce(new Vector2(rb.velocity.x, jumpSpeed));
         }
 
+        if (horizontalMove < 0 && facingRight)
+        {
+            Flip();
+        }
+        else if (horizontalMove > 0 && !facingRight)
+        {
+            Flip();
+        }
+
+        if (cc.IsTouchingLayers(GroundLayer.value)) {
+            isGrounded = true;
+            Debug.Log(isGrounded);
+        } else {
+            isGrounded = false;
+        }
+    }
+
+    void Flip()
+    {
+        facingRight = !facingRight;
+        Vector3 theScale = transform.localScale;
+        theScale.x *= -1;
+        transform.localScale = theScale;
     }
 
     void PlayerInput()
     {
         horizontalMove = Input.GetAxisRaw("Horizontal");
-        isJumping = Input.GetButtonDown("Jump");
+        if (isGrounded) {
+            isJumping = Input.GetButtonDown("Jump");
+        }
     }
 
     // void FixedUpdate()
     // {
-
+        
+    
+        
 
     // }
 
