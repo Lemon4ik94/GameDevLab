@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour
     public LayerMask GroundLayer;
     private CircleCollider2D cc;
     private Rigidbody2D rb;
+    public Animator animator;
 
 
     // Start is called before the first frame update
@@ -29,6 +30,12 @@ public class PlayerController : MonoBehaviour
         PlayerInput();
 
         rb.velocity = new Vector2(horizontalMove * speed, rb.velocity.y);
+        
+        animator.SetFloat("Speed", Mathf.Abs(rb.velocity.x));
+
+        animator.SetFloat("vertSpeed", rb.velocity.y);
+
+        animator.SetBool("isJumping", !isGrounded);
 
         if (isJumping) {
             rb.AddForce(new Vector2(rb.velocity.x, jumpSpeed));
