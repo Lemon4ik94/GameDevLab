@@ -52,7 +52,6 @@ public class PlayerController : MonoBehaviour
 
         if (cc.IsTouchingLayers(GroundLayer.value)) {
             isGrounded = true;
-            Debug.Log(isGrounded);
         } else {
             isGrounded = false;
         }
@@ -61,9 +60,8 @@ public class PlayerController : MonoBehaviour
     void Flip()
     {
         facingRight = !facingRight;
-        Vector3 theScale = transform.localScale;
-        theScale.x *= -1;
-        transform.localScale = theScale;
+        
+        transform.Rotate(0f, 180f, 0f);
     }
 
     void PlayerInput()
