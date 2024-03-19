@@ -4,14 +4,18 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public int maxHealth;
+    public float currentHealth;
     public int speed;
     public int jumpSpeed;
-    private bool facingRight = true;
+    private bool canTakeDamage = true;
+    public bool facingRight = true;
     private Vector3 verticalVelocity = Vector3.zero;
     private float horizontalMove;
     private bool isJumping = false;
     private bool isGrounded = true;
     public LayerMask GroundLayer;
+    public LayerMask SpikesLayer;
     private CircleCollider2D cc;
     private Rigidbody2D rb;
     public Animator animator;
@@ -22,6 +26,10 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         cc = GetComponent<CircleCollider2D>();
+
+        Application.targetFrameRate = 60;
+
+        currentHealth = maxHealth;
     }
 
     // Update is called once per frame
@@ -30,14 +38,17 @@ public class PlayerController : MonoBehaviour
         PlayerInput();
 
         rb.velocity = new Vector2(horizontalMove * speed, rb.velocity.y);
-        
+
         animator.SetFloat("Speed", Mathf.Abs(rb.velocity.x));
 
         animator.SetFloat("vertSpeed", rb.velocity.y);
 
         animator.SetBool("isJumping", !isGrounded);
 
-        if (isJumping) {
+        animator.SetBool("gotDamage", !canTakeDamage);
+
+        if (isJumping)
+        {
             rb.AddForce(new Vector2(rb.velocity.x, jumpSpeed));
         }
 
@@ -50,34 +61,64 @@ public class PlayerController : MonoBehaviour
             Flip();
         }
 
-        if (cc.IsTouchingLayers(GroundLayer.value)) {
+        if (cc.IsTouchingLayers(GroundLayer.value))
+        {
             isGrounded = true;
-        } else {
+        }
+        else
+        {
             isGrounded = false;
+        }
+
+        if (cc.IsTouchingLayers(SpikesLayer.value))
+        {
+            if (canTakeDamage)
+            {
+                GetDamage();
+                StartCoroutine(damageTimer());
+            }
+
         }
     }
 
+    private IEnumerator damageTimer()
+    {
+        canTakeDamage = false;
+        yield return new WaitForSeconds(1f);
+        canTakeDamage = true;
+    }
+
+    void GetDamage()
+    {
+        currentHealth -= 10;
+        if (currentHealth <= 0)
+        {
+            currentHealth = 0;
+            Die();
+            return;
+        }
+        rb.AddForce(new Vector2(rb.velocity.x, 400));
+    }
+
+    void Die()
+    {
+        rb.position = new Vector2(-5, -1.433f);
+        currentHealth = maxHealth;
+    }
     void Flip()
     {
         facingRight = !facingRight;
-        
+
         transform.Rotate(0f, 180f, 0f);
     }
 
     void PlayerInput()
     {
         horizontalMove = Input.GetAxisRaw("Horizontal");
-        if (isGrounded) {
+        if (isGrounded)
+        {
             isJumping = Input.GetButtonDown("Jump");
         }
     }
-
-    // void FixedUpdate()
-    // {
-        
-    
-        
-
-    // }
 
 }
